@@ -9,7 +9,7 @@
 			"name": "Debug (Launch) - Current File",
 			"request": "launch",
 			"mainClass": "${file}",
-			"vmArgs": "-Djava.library.path=/opt/ibm/ILOG/CPLEX_Studio_Community129/cplex/bin/x86-64_linux/"
+			"vmArgs": "-Djava.library.path=/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux"
 		},
 		{
 			"type": "java",
@@ -17,7 +17,7 @@
 			"request": "launch",
 			"mainClass": "conteiner.App",
 			"projectName": "conteiner",
-			"vmArgs": "-Djava.library.path=/opt/ibm/ILOG/CPLEX_Studio_Community129/cplex/bin/x86-64_linux/"
+			"vmArgs": "-Djava.library.path=/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux"
 		}
 	]
 }

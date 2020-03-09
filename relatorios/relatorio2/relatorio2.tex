@@ -1,0 +1,63 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+%opening
+\title{Report 2 \textendash\ Operations Research}
+\author{Willian de Souza Soares \textendash\ 2014.1.08.034}
+\date{March 9, 2020}
+
+\begin{document}
+\maketitle
+
+\pagenumbering{gobble}
+\begin{abstract}
+A simple presentation of the solutions and thoughts about \emph{Container's} problem, using \emph{CPLEX} and \emph{Java}.
+\end{abstract}
+
+\section{Finding the optimal values}
+The majority of the instances were easy and fast to find it's optimal value. On the instances \emph{00} and \emph{01}, the optimal value were found both in Integer and Real models. In contrast, only the Real optimal value was found on the \emph{02} instance. 
+
+\subsection{The problem with \emph{Instance 02}}
+
+One of the problems with the instance 02 it's the size. Whensoever the instances \emph{00} and \emph{01} has, respectively, 10 and 50 items, the instance \emph{02} has 500 items, with mixed profit, weight and volume. 
+
+Although the size contribute to increase the complexity of the items, the major factor it's the \emph{b} value, which indicates the maximum number of times that same item can be put in a container. This increase the complexity by many magnitudes, slowing down the algorithm, specially on the Integer solution, which the \emph{CPLEX solver} couldn't find the optimal solution in a reasonable time.
+
+\subsection{The solution}
+
+The simplest solution was taken: A time limit to find the optimal solution was set. An arbitrary value of 600 seconds (10 minutes) was set. Since the \emph{gap} of the optimal solution was under 1\%, it was an acceptable value, given the nature of the problem.
+
+\begin{table}[h]
+\caption{Results for a Integer model}
+\centering
+\label{tab:my-table}
+\begin{tabular}{ccccc}
+\hline
+Instance & Profit             & Gap    & Optimal & Time Limit \\ \hline
+00       & 42.92491516324943  & 0\%    & Yes     & N/A       \\
+01       & 91.3135124472273   & 0\%    & Yes     & N/A       \\
+02       & 508.26966170662337 & 0.61\% & No      & 600s      \\ \hline
+\end{tabular}
+\end{table}
+
+\newpage
+
+
+\begin{table}[h]
+\caption{Results for a Real model}
+\centering
+\label{tab:my-table1}
+\begin{tabular}{ccccc}
+\hline
+Instance & Profit             & Gap & Optimal & Time Limit \\ \hline
+00       & 49.571868896306285 & 0\% & Yes     & N/A       \\
+01       & 95.89502739170803  & 0\% & Yes     & N/A       \\
+02       & 511.45921634552246 & 0\% & Yes     & N/A       \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Conclusions}
+The problem that once was rather hard to find a solution, now it's simple with the mathematical modeling of \emph{CPLEX}. Given the circumstances, the difference between an sub-optimal value that is found in minutes is better than a optimal one.
+
+\end{document}
