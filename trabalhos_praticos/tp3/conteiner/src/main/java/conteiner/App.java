@@ -12,6 +12,91 @@ import ilog.concert.IloNumVar;
 import ilog.cplex.IloCplex;
 
 public class App {
+
+    public static void main(String[] args) {
+        try {
+            var file = "instancia_02.conteiner";
+            var data = ReadFile("instancias/" + file);
+
+            var modelo = new IloCplex();
+            modelo.setParam(IloCplex.Param.TimeLimit, 600);
+
+            var solucao = new IloNumVar[data.getQtdItens()][data.getQtdConteiners()][data.getUsoMaximoItem() + 1];
+            for (int i = 0; i < data.getQtdItens(); i++)
+                for (int j = 0; j < data.getQtdConteiners(); j++)
+                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++)
+                        solucao[i][j][m] = modelo.boolVar();
+
+            // sum[i=1->n](sum[j=1->k](sum[m=0->b](m * Li * Sijm)))
+            var funcaoObjetivo = modelo.linearNumExpr();
+            for (int i = 0; i < data.getQtdItens(); i++)
+                for (int j = 0; j < data.getQtdConteiners(); j++)
+                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++)
+                        funcaoObjetivo.addTerm(data.getItensLucro()[i] * m, solucao[i][j][m]);
+
+            modelo.addMaximize(funcaoObjetivo);
+
+            // restricao de carga
+            for (int j = 0; j < data.getQtdConteiners(); j++) {
+                // Para cada conteiner
+                var restricaoCarga = modelo.linearNumExpr();
+                for (int i = 0; i < data.getQtdItens(); i++) {
+                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++) {
+                        restricaoCarga.addTerm(data.getItensPeso()[i] * m, solucao[i][j][m]);
+                    }
+                }
+                modelo.addLe(restricaoCarga, data.getConteinerCapacidade());
+            }
+
+            // restricao de volume
+            for (int j = 0; j < data.getQtdConteiners(); j++) {
+                var restricaoVolume = modelo.linearNumExpr();
+                for (int i = 0; i < data.getQtdItens(); i++) {
+                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++) {
+                        restricaoVolume.addTerm(data.getItensVolume()[i] * m, solucao[i][j][m]);
+                    }
+                }
+                modelo.addLe(restricaoVolume, data.getConteinerVolume());
+            }
+
+            // restrição de limite
+            for (int i = 0; i < data.getQtdItens(); i++) {
+                // Para cada item, não pode passar da quantidade máxima
+                var restricaoLimite = modelo.linearNumExpr();
+                for (int j = 0; j < data.getQtdConteiners(); j++) {
+                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++) {
+                        restricaoLimite.addTerm(1 * m, solucao[i][j][m]);
+                    }
+                }
+                modelo.addLe(restricaoLimite, data.getUsoMaximoItem());
+            }
+
+            // restrição de limite de cada item
+            for (int i = 0; i < data.getQtdItens(); i++) {
+                for (int j = 0; j < data.getQtdConteiners(); j++) {
+                    // para cada item, apenas uma quantidade de itens
+                    var restricaoQuantidade = modelo.linearNumExpr();
+                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++) {
+                        restricaoQuantidade.addTerm(1.0, solucao[i][j][m]);
+                    }
+                    modelo.addEq(restricaoQuantidade, 1.0);
+                }
+            }
+
+            if (modelo.solve()) {
+                System.out.println("----------");
+                System.out.println(modelo.getStatus());
+                System.out.println(modelo.getObjValue());
+                System.out.println("----------");
+            } else {
+                System.out.println("Erro");
+            }
+
+        } catch (IloException ex) {
+            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public static Data ReadFile(String filename) {
         try {
             var reader = new BufferedReader(new FileReader(filename));
@@ -58,94 +143,4 @@ public class App {
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            var file = "instancia_02.conteiner";
-            var data = ReadFile("instancias/" + file);
-
-            var modelo = new IloCplex();
-            modelo.setParam(IloCplex.Param.TimeLimit, 600);
-
-            var solucao = new IloNumVar[data.getQtdItens()][data.getQtdConteiners()][data.getUsoMaximoItem() + 1];
-            for (int i = 0; i < data.getQtdItens(); i++) {
-                for (int j = 0; j < data.getQtdConteiners(); j++) {
-                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++) {
-                        solucao[i][j][m] = modelo.boolVar();
-                    }
-                }
-            }
-
-            // sum[i=1->n](sum[j=1->k](sum[m=0->b](m * Li * Sijm)))
-            var funcaoObjetivo = modelo.linearNumExpr();
-            for (int i = 0; i < data.getQtdItens(); i++) {
-                for (int j = 0; j < data.getQtdConteiners(); j++) {
-                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++) {
-                        funcaoObjetivo.addTerm(data.getItensLucro()[i] * m, solucao[i][j][m]);
-                    }
-                }
-            }
-
-            modelo.addMaximize(funcaoObjetivo);
-
-            // restricao de carga
-            for (int j = 0; j < data.getQtdConteiners(); j++) {
-                var restricaoCarga = modelo.linearNumExpr();
-                for (int i = 0; i < data.getQtdItens(); i++) {
-                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++) {
-                        restricaoCarga.addTerm(data.getItensPeso()[i], solucao[i][j][m]);
-                    }
-                }
-                modelo.addLe(restricaoCarga, data.getConteinerCapacidade());
-            }
-
-            // restricao de carga
-            for (int j = 0; j < data.getQtdConteiners(); j++) {
-                var restricaoVolume = modelo.linearNumExpr();
-                for (int i = 0; i < data.getQtdItens(); i++) {
-                    for (int m = 0; m < data.getUsoMaximoItem() + 1; m++) {
-                        restricaoVolume.addTerm(data.getItensVolume()[i], solucao[i][j][m]);
-                    }
-                }
-                modelo.addLe(restricaoVolume, data.getConteinerVolume());
-            }
-
-            // restrição de limite
-            for (int i = 0; i < data.getQtdItens(); i++) {
-                var restricaoLimite = modelo.linearNumExpr();
-                for (int j = 0; j < data.getQtdConteiners(); j++) {
-                    for (int m = 0; m < data.getUsoMaximoItem(); m++) {
-                        restricaoLimite.addTerm(1.0, solucao[i][j]);
-
-                    }
-                }
-                modelo.addLe(restricaoLimite, data.getUsoMaximoItem());
-            }
-
-            // restrição de limite de cada item
-            for (int i = 0; i < data.getQtdItens(); i++) {
-                for (int j = 0; j < data.getQtdConteiners(); j++) {
-                    modelo.addLe(solucao[i][j], data.getUsoMaximoItem());
-                    modelo.addGe(solucao[i][j], 0.0);
-                }
-            }
-            if (modelo.solve()) {
-                System.out.println("----------");
-                System.out.println(modelo.getStatus());
-                System.out.println(modelo.getObjValue());
-                System.out.println("----------");
-
-                for (int i = 0; i < data.getQtdItens(); i++) {
-                    for (int j = 0; j < data.getQtdConteiners(); j++) {
-                        System.out.print(modelo.getValue(solucao[i][j]) + "\t");
-                    }
-                    System.out.println();
-                }
-            } else {
-                System.out.println("Erro");
-            }
-
-        } catch (IloException ex) {
-            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 }

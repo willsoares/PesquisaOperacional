@@ -1,0 +1,46 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\author{Willian de Souza Soares \textendash\ 2014.1.08.034}
+\title{Report 3 \textendash\ Operations Research}
+\begin{document}
+\maketitle
+\pagenumbering{gobble}
+\begin{abstract}
+A new implementation on the container's problem, modeling based in a three-dimensional matrix and boolean domain.
+\end{abstract}
+\section{The difference between approaches}
+The major difference between the approach described on the Report 2 and this is the usage of an three-dimensional matrix to represent the solution, modeling the objective function around having a boolean solution.
+
+\section{Results}
+
+\begin{table}[h]
+\caption{Results for a Integer solution, \emph{Report 2} implementation}
+\centering
+\label{tab:my-table1}
+\begin{tabular}{cccccc}
+\hline
+Instance & Profit             & Gap    & Optimal & Time Elapsed & Number of Ticks 	\\ \hline
+00       & 42.92491516324943  & 0\%    & Yes     & 0.03s       	& 0.50 ticks	\\
+01       & 91.3135124472273   & 0\%    & Yes     & 0.37s      	& 43.36 ticks	\\
+02       & 504.24308349895546 & 1.41\% & No      & 60s*			& 21874.30 ticks\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Results for a Integer solution, Three-Dimensional boolean solution}
+\centering
+\label{tab:my-table1}
+\begin{tabular}{cccccc}
+\hline
+Instance & Profit             & Gap    & Optimal & Time Elapsed & Number of Ticks 	\\ \hline
+00       & 42.92491516324943  & 0\%    & Yes     & 0.03s       	& 0.57 ticks	\\
+01       & 91.3135124472273   & 0\%    & Yes     & 0.32s      	& 43.78 ticks	\\
+02       & 504.24308349895546 & 2.72\% & No      & 60s*			& 24689.29 ticks\\ \hline
+\end{tabular}
+\end{table}
+*The instance 02 reached the time limit of 60 seconds.
+\end{document}

@@ -86,7 +86,7 @@ public class App {
             // maximizar
             modelo.addMaximize(fo);
             // limitando o programa para 5 minutos
-            modelo.setParam(IloCplex.Param.TimeLimit, 600);
+            modelo.setParam(IloCplex.Param.TimeLimit, 60);
             // adcionar restrições
             // restrição de carga
 
@@ -128,13 +128,6 @@ public class App {
                 System.out.println(modelo.getStatus());
                 System.out.println(modelo.getObjValue());
                 System.out.println("----------");
-
-                for (int i = 0; i < data.getQtdItens(); i++) {
-                    for (int j = 0; j < data.getQtdConteiners(); j++) {
-                        System.out.print(modelo.getValue(s[i][j]) + "\t");
-                    }
-                    System.out.println();
-                }
             } else {
                 System.out.println("Erro");
             }
