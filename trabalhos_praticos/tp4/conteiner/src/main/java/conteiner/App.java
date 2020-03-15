@@ -21,28 +21,28 @@ public class App {
             var modelo = new IloCplex();
             // modelo.setParam(IloCplex.Param.TimeLimit, 600);
 
-            var solucao = new IloIntVar[Data.n][Data.k][Data.max + 1];
+            var s = new IloIntVar[Data.n][Data.k][Data.max + 1];
             for (int i = 0; i < Data.n; i++)
                 for (int j = 0; j < Data.k; j++)
                     for (int m = 0; m < Data.max + 1; m++)
-                        solucao[i][j][m] = modelo.intVar(0, 1);
+                        s[i][j][m] = modelo.intVar(0, 1);
 
-            // sum[i=1->n](sum[j=1->k](sum[m=0->b](m * Li * Sijm)))
-            var funcaoObjetivo = modelo.linearNumExpr();
+            // * sum[i=1->n](sum[j=1->k](sum[m=0->b](m * Li * Sijm)))
+            var fo = modelo.linearNumExpr();
             for (int i = 0; i < Data.n; i++)
                 for (int j = 0; j < Data.k; j++)
                     for (int m = 0; m < Data.max + 1; m++)
-                        funcaoObjetivo.addTerm(Data.l[i] * m, solucao[i][j][m]);
+                        fo.addTerm(Data.l[i] * m, s[i][j][m]);
 
-            modelo.addMaximize(funcaoObjetivo);
+            modelo.addMaximize(fo);
 
-            // restricao de carga
+            // * restricao de carga
             for (int j = 0; j < Data.k; j++) {
                 // Para cada conteiner
                 var restricaoCarga = modelo.linearNumExpr();
                 for (int i = 0; i < Data.n; i++) {
                     for (int m = 0; m < Data.max + 1; m++) {
-                        restricaoCarga.addTerm(Data.p[i] * m, solucao[i][j][m]);
+                        restricaoCarga.addTerm(Data.p[i] * m, s[i][j][m]);
                     }
                 }
                 modelo.addLe(restricaoCarga, Data.cc);
@@ -53,7 +53,7 @@ public class App {
                 var restricaoVolume = modelo.linearNumExpr();
                 for (int i = 0; i < Data.n; i++) {
                     for (int m = 0; m < Data.max + 1; m++) {
-                        restricaoVolume.addTerm(Data.v[i] * m, solucao[i][j][m]);
+                        restricaoVolume.addTerm(Data.v[i] * m, s[i][j][m]);
                     }
                 }
                 modelo.addLe(restricaoVolume, Data.cv);
@@ -65,7 +65,7 @@ public class App {
                 var restricaoLimite = modelo.linearNumExpr();
                 for (int j = 0; j < Data.k; j++) {
                     for (int m = 0; m < Data.max + 1; m++) {
-                        restricaoLimite.addTerm(m, solucao[i][j][m]);
+                        restricaoLimite.addTerm(m, s[i][j][m]);
                     }
                 }
                 modelo.addLe(restricaoLimite, Data.max);
@@ -78,7 +78,7 @@ public class App {
                     // para cada item, apenas uma quantidade de itens
                     var restricaoQuantidade = modelo.linearNumExpr();
                     for (int m = 0; m < Data.max + 1; m++) {
-                        restricaoQuantidade.addTerm(1, solucao[i][j][m]);
+                        restricaoQuantidade.addTerm(1, s[i][j][m]);
                     }
                     modelo.addEq(restricaoQuantidade, 1);
                 }
